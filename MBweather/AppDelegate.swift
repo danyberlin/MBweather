@@ -10,17 +10,117 @@ import Cocoa
 
 @NSApplicationMain
 class AppDelegate: NSObject, NSApplicationDelegate {
-
-
+    var weatherTimer : Timer?
+    var currentWeather = -99.9
+    let menu = NSMenu()
+    let statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
 
     func applicationDidFinishLaunching(_ aNotification: Notification) {
         // Insert code here to initialize your application
+        getWeather()
+        if let button = statusItem.button {
+            button.title = String(currentWeather) + "℃"
+        }
+        constuctMenu()
+        weatherTimer = Timer.scheduledTimer(withTimeInterval: 60*30, repeats: true) { time in
+            self.getWeather()
+        }
+    }
+    
+    @objc func updateWeather(_ sender: Any?) {
+        getWeather()
     }
 
     func applicationWillTerminate(_ aNotification: Notification) {
         // Insert code here to tear down your application
     }
 
+    func getWeather(){
+        let url = URL(string:     "https://api.openweathermap.org/data/2.5/weather?id=2950157&APPID=386371523446a5a1ef1272512c75f28b")
+        guard let requestUrl = url else { fatalError() }
+        // Create URL Request
+        var request = URLRequest(url: requestUrl)
+        // Specify HTTP Method to use
+        request.httpMethod = "GET"
+        // Send HTTP Request
+        let task = URLSession.shared.dataTask(with: request) { (data, response, error) in
+            // Check if Error took place
+            if let error = error {
+                print("Error took place \(error)")
+                return
+            }
+            // Read HTTP Response Status code
+            if let response = response as? HTTPURLResponse {
+                print("Response HTTP Status code: \(response.statusCode)")
+            }
+            // Convert HTTP Response Data to JSON
+            struct Response: Decodable { // or Decodable
+                let main : Main
+                let weather : [Weather]
+                let base: String
+                let cod: Int
+                let coord: Coord
+                let sys: Sys
+                let clouds: Clouds
+
+            }
+            struct Clouds: Decodable {
+                let all: Int
+            }
+            struct Coord: Decodable {
+                let lat: Double
+                let lon: Double
+            }
+            struct Weather: Decodable {
+//                let id: Int
+//                let main: String
+                let description: String
+                let icon: String
+            }
+            struct Sys: Decodable {
+                let country: String
+                let id: Int
+                let sunrise: UInt64
+                let sunset: UInt64
+                let type: Int
+            }
+            struct Main: Decodable {
+//                let humidity: Int
+//                let pressure: Int
+                let temp: Double
+//                let tempMax: Int
+//                let tempMin: Int
+//                private enum CodingKeys: String, CodingKey {
+//                    case humidity, pressure, temp, tempMax = "temp_max", tempMin = "temp_min"
+//                }
+            }
+            if let data = data {
+                do {
+                    
+                    let res = try JSONDecoder().decode(Response.self, from: data)
+                    self.currentWeather = res.main.temp
+                    print("Main: \(res.main)")
+                    print("Weather: \(res.weather[0])")
+                    print("Base: \(res.base)")
+                    print("Cod: \(res.cod)")
+                    print("Coord: \(res.coord)")
+                    print("Sys: \(res.sys)")
+                    print("Clouds: \(res.clouds)")
+
+                    DispatchQueue.main.async {
+                        self.statusItem.button?.title = String(format: " %.1f",(self.currentWeather - 273.15)) + "℃"
+                    }
+                } catch let error {
+                    print("Error! : \(error)")
+                }
+            }
+            let date = Date()
+            let dateFormater = DateFormatter()
+            dateFormater.dateFormat = "HH:mm"
+            self.menu.item(at: 0)?.title = "Refresh (Last: " + dateFormater.string(from: date) + ")"
+        }
+        task.resume()
+    }
     // MARK: - Core Data stack
 
     lazy var persistentContainer: NSPersistentContainer = {
@@ -117,6 +217,12 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         // If we got here, it is time to quit.
         return .terminateNow
     }
-
+    func constuctMenu() {
+        
+        menu.addItem(NSMenuItem(title: "Refresh", action: #selector(AppDelegate.updateWeather(_:)), keyEquivalent: ""))
+        menu.addItem(NSMenuItem.separator())
+        menu.addItem(NSMenuItem(title: "Quit MBweather", action: #selector(NSApplication.terminate(_:)), keyEquivalent: ""))
+        statusItem.menu = menu
+    }
 }
 
