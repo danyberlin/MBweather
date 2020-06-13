@@ -8,12 +8,13 @@
 
 /* Begin PBXBuildFile section */
 		3B3CD9732491283B00B8E8FA /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B3CD9722491283B00B8E8FA /* AppDelegate.swift */; };
-		3B3CD9752491283B00B8E8FA /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B3CD9742491283B00B8E8FA /* ViewController.swift */; };
 		3B3CD9782491283B00B8E8FA /* MBweather.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 3B3CD9762491283B00B8E8FA /* MBweather.xcdatamodeld */; };
 		3B3CD97A2491283D00B8E8FA /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 3B3CD9792491283D00B8E8FA /* Assets.xcassets */; };
 		3B3CD97D2491283D00B8E8FA /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 3B3CD97B2491283D00B8E8FA /* Main.storyboard */; };
 		3B3CD9892491283D00B8E8FA /* MBweatherTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B3CD9882491283D00B8E8FA /* MBweatherTests.swift */; };
 		3B3CD9942491283D00B8E8FA /* MBweatherUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B3CD9932491283D00B8E8FA /* MBweatherUITests.swift */; };
+		3BB0FF952492E06C00AA0999 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BB0FF942492E06C00AA0999 /* ViewController.swift */; };
+		3BB0FF972492E50400AA0999 /* EventMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BB0FF962492E50400AA0999 /* EventMonitor.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -36,7 +37,6 @@
 /* Begin PBXFileReference section */
 		3B3CD96F2491283B00B8E8FA /* MBweather.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MBweather.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		3B3CD9722491283B00B8E8FA /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
-		3B3CD9742491283B00B8E8FA /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
 		3B3CD9772491283B00B8E8FA /* MBweather.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MBweather.xcdatamodel; sourceTree = "<group>"; };
 		3B3CD9792491283D00B8E8FA /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		3B3CD97C2491283D00B8E8FA /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
@@ -48,6 +48,8 @@
 		3B3CD98F2491283D00B8E8FA /* MBweatherUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MBweatherUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		3B3CD9932491283D00B8E8FA /* MBweatherUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MBweatherUITests.swift; sourceTree = "<group>"; };
 		3B3CD9952491283D00B8E8FA /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		3BB0FF942492E06C00AA0999 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
+		3BB0FF962492E50400AA0999 /* EventMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventMonitor.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -99,7 +101,8 @@
 			isa = PBXGroup;
 			children = (
 				3B3CD9722491283B00B8E8FA /* AppDelegate.swift */,
-				3B3CD9742491283B00B8E8FA /* ViewController.swift */,
+				3BB0FF962492E50400AA0999 /* EventMonitor.swift */,
+				3BB0FF942492E06C00AA0999 /* ViewController.swift */,
 				3B3CD9792491283D00B8E8FA /* Assets.xcassets */,
 				3B3CD97B2491283D00B8E8FA /* Main.storyboard */,
 				3B3CD97E2491283D00B8E8FA /* Info.plist */,
@@ -257,9 +260,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				3B3CD9752491283B00B8E8FA /* ViewController.swift in Sources */,
+				3BB0FF952492E06C00AA0999 /* ViewController.swift in Sources */,
 				3B3CD9732491283B00B8E8FA /* AppDelegate.swift in Sources */,
 				3B3CD9782491283B00B8E8FA /* MBweather.xcdatamodeld in Sources */,
+				3BB0FF972492E50400AA0999 /* EventMonitor.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

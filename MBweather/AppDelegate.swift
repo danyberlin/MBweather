@@ -10,23 +10,53 @@ import Cocoa
 
 @NSApplicationMain
 class AppDelegate: NSObject, NSApplicationDelegate {
+//    let viewDelegate : ViewController? = NSApplication.shared.delegate as? ViewController
+    let viewDelegate = ViewController()
     var weatherTimer : Timer?
     var currentWeather = -99.9
-    let menu = NSMenu()
+//    let menu = NSMenu()
     let statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
-
+    let popover = NSPopover()
+    var eventMonitor: EventMonitor?
     func applicationDidFinishLaunching(_ aNotification: Notification) {
         // Insert code here to initialize your application
         getWeather()
         if let button = statusItem.button {
             button.title = String(currentWeather) + "℃"
+            button.action = #selector(togglePopover(_:))
         }
-        constuctMenu()
+        popover.contentViewController = ViewController.freshController()
+        popover.animates = false
+
+//        constuctMenu()
         weatherTimer = Timer.scheduledTimer(withTimeInterval: 60*30, repeats: true) { time in
             self.getWeather()
         }
+        eventMonitor = EventMonitor(mask: [.leftMouseDown, .rightMouseDown]) { [weak self] event in
+          if let strongSelf = self, strongSelf.popover.isShown {
+            strongSelf.closePopover(sender: event)
+          }
+        }
     }
-    
+    @objc func togglePopover(_ sender: Any?) {
+      if popover.isShown {
+        closePopover(sender: sender)
+      } else {
+        showPopover(sender: sender)
+      }
+    }
+
+    func showPopover(sender: Any?) {
+      if let button = statusItem.button {
+        popover.show(relativeTo: button.bounds, of: button, preferredEdge: NSRectEdge.minY)
+      }
+        eventMonitor?.start()
+    }
+
+    func closePopover(sender: Any?) {
+      popover.performClose(sender)
+        eventMonitor?.stop()
+    }
     @objc func updateWeather(_ sender: Any?) {
         getWeather()
     }
@@ -34,9 +64,94 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationWillTerminate(_ aNotification: Notification) {
         // Insert code here to tear down your application
     }
-
-    func getWeather(){
-        let url = URL(string:     "https://api.openweathermap.org/data/2.5/weather?id=2950157&APPID=386371523446a5a1ef1272512c75f28b")
+    
+    public struct Response: Decodable { // or Decodable
+                    var main : Main
+                    var weather : [Weather]
+                    var base: String
+                    var visibility : Int
+                    var cod: Int
+                    var coord: Coord
+                    var sys: Sys
+                    var clouds: Clouds
+                    var name: String
+        init() {
+            main = Main()
+            weather = [Weather()]
+            base = "response_base"
+            cod = 0
+            coord = Coord()
+            sys = Sys()
+            clouds = Clouds()
+            name = "response_name"
+            visibility = 0
+        }
+                }
+                struct Clouds: Decodable {
+                    var all: Int
+                    init() {
+                        all = 0
+                    }
+                }
+                struct Coord: Decodable {
+                    var lat: Double
+                    var lon: Double
+                    init() {
+                        lat = 0
+                        lon = 0
+                    }
+                }
+                struct Weather: Decodable {
+                    var id: Int
+                    var main: String
+                    var description: String
+                    var icon: String
+                    init() {
+                        id = 0
+                        main = "weather_main"
+                        description = "weather_description"
+                        icon = "weather_icon"
+                    }
+                }
+                struct Sys: Decodable {
+                    var country: String
+                    var id: Int
+                    var sunrise: UInt64
+                    var sunset: UInt64
+                    var type: Int
+                    init() {
+                        country = "sys_country"
+                        id = 0
+                        sunrise = 0
+                        sunset = 0
+                        type = 0
+                    }
+                }
+                struct Main: Decodable {
+                    var humidity: Int
+                    var pressure: Int
+                    var temp: Double
+                    var temp_max: Double
+                    var temp_min: Double
+                    var feels_like : Double
+                    init() {
+                        humidity = 0
+                        pressure = 0
+                        temp = 0
+                        temp_max = 0
+                        temp_min = 0
+                        feels_like = 0
+                    }
+                }
+    public var fullResponse = Response()
+    public var date = Date()
+    public func getWeather(){
+        let urlPart1 = "https://api.openweathermap.org/data/2.5/weather?id="
+        let urlPartCity = "2950157"
+        let urlPart3 = "&APPID="
+        let urlPartApiKey = "386371523446a5a1ef1272512c75f28b"
+        let urlComplete = urlPart1 + urlPartCity + urlPart3 + urlPartApiKey
+        let url = URL(string:     urlComplete)
         guard let requestUrl = url else { fatalError() }
         // Create URL Request
         var request = URLRequest(url: requestUrl)
@@ -54,71 +169,20 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 print("Response HTTP Status code: \(response.statusCode)")
             }
             // Convert HTTP Response Data to JSON
-            struct Response: Decodable { // or Decodable
-                let main : Main
-                let weather : [Weather]
-                let base: String
-                let cod: Int
-                let coord: Coord
-                let sys: Sys
-                let clouds: Clouds
-
-            }
-            struct Clouds: Decodable {
-                let all: Int
-            }
-            struct Coord: Decodable {
-                let lat: Double
-                let lon: Double
-            }
-            struct Weather: Decodable {
-//                let id: Int
-//                let main: String
-                let description: String
-                let icon: String
-            }
-            struct Sys: Decodable {
-                let country: String
-                let id: Int
-                let sunrise: UInt64
-                let sunset: UInt64
-                let type: Int
-            }
-            struct Main: Decodable {
-//                let humidity: Int
-//                let pressure: Int
-                let temp: Double
-//                let tempMax: Int
-//                let tempMin: Int
-//                private enum CodingKeys: String, CodingKey {
-//                    case humidity, pressure, temp, tempMax = "temp_max", tempMin = "temp_min"
-//                }
-            }
             if let data = data {
                 do {
-                    
-                    let res = try JSONDecoder().decode(Response.self, from: data)
-                    self.currentWeather = res.main.temp
-                    print("Main: \(res.main)")
-                    print("Weather: \(res.weather[0])")
-                    print("Base: \(res.base)")
-                    print("Cod: \(res.cod)")
-                    print("Coord: \(res.coord)")
-                    print("Sys: \(res.sys)")
-                    print("Clouds: \(res.clouds)")
+                    self.fullResponse = try JSONDecoder().decode(Response.self, from: data)
+                    print("Main: \(self.fullResponse)")
 
                     DispatchQueue.main.async {
-                        self.statusItem.button?.title = String(format: " %.1f",(self.currentWeather - 273.15)) + "℃"
+                        self.statusItem.button?.title = String(format: " %.1f",(self.fullResponse.main.temp - 273.15)) + "℃"
                     }
                 } catch let error {
                     print("Error! : \(error)")
                 }
             }
-            let date = Date()
-            let dateFormater = DateFormatter()
-            dateFormater.dateFormat = "HH:mm"
-            self.menu.item(at: 0)?.title = "Refresh (Last: " + dateFormater.string(from: date) + ")"
         }
+        date = Date()
         task.resume()
     }
     // MARK: - Core Data stack
@@ -217,12 +281,12 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         // If we got here, it is time to quit.
         return .terminateNow
     }
-    func constuctMenu() {
-        
-        menu.addItem(NSMenuItem(title: "Refresh", action: #selector(AppDelegate.updateWeather(_:)), keyEquivalent: ""))
-        menu.addItem(NSMenuItem.separator())
-        menu.addItem(NSMenuItem(title: "Quit MBweather", action: #selector(NSApplication.terminate(_:)), keyEquivalent: ""))
-        statusItem.menu = menu
-    }
+//    func constuctMenu() {
+//
+//        menu.addItem(NSMenuItem(title: "Refresh", action: #selector(AppDelegate.updateWeather(_:)), keyEquivalent: ""))
+//        menu.addItem(NSMenuItem.separator())
+//        menu.addItem(NSMenuItem(title: "Quit MBweather", action: #selector(NSApplication.terminate(_:)), keyEquivalent: ""))
+//        statusItem.menu = menu
+//    }
 }
 
